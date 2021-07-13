@@ -38,6 +38,7 @@ class AppListProvider: ListProvider {
         // appName to dir recursivity key/valye dict
         appDirDict[applicationDir] = true
         appDirDict[systemApplicationDir] = true
+        appDirDict["/usr/local/bin"] = true
         appDirDict["/System/Library/CoreServices/"] = false
 
         initFileWatch(Array(appDirDict.keys))
@@ -71,8 +72,8 @@ class AppListProvider: ListProvider {
 
             for sub in subs {
                 let dir = appDir.appendingPathComponent(sub)
-
-                if dir.pathExtension == "app" {
+                
+                if dir.pathExtension == "app" || dir.pathExtension == "" {
                     list.append(dir)
                 } else if dir.hasDirectoryPath && recursive {
                     list.append(contentsOf: self.getAppList(dir))
@@ -93,8 +94,12 @@ class AppListProvider: ListProvider {
             print("Cannot do action on item \(item.name)")
             return
         }
-        DispatchQueue.main.async {
-            NSWorkspace.shared.launchApplication(app.path)
+        if app.pathExtension == "" {
+           NSWorkspace.shared.openFile(app.path)
+        } else {
+            DispatchQueue.main.async {
+                NSWorkspace.shared.launchApplication(app.path)
+        }
         }
     }
 }
